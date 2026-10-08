@@ -30,7 +30,7 @@
 
 **Source code:** [lib/core/hilfen.dart](https://github.com/Code4OvM/tidal2wiim-demo/blob/851304ffd33e6ed9f65d74a29d146311e9a6265b/lib/core/hilfen.dart)
 
-**Purpose:** Provides small helper functions with no state of their own. Checks JSON structures, cleans up text and converts ISO durations for the track display.
+**Purpose:** Provides small helper functions with no state of their own. Checks JSON structures, cleans up text and converts **time spans in the standardised format defined by ISO 8601** – here, for example, the playing time of a music track – for the track display.
 
 **Inputs:** Object?, JSON values, search text or Duration?.
 

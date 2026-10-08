@@ -20,7 +20,7 @@
       "id": "M02",
       "path": "lib/core/hilfen.dart",
       "title": "Process JSON, search text and durations",
-      "job": "Provides small helper functions with no state of their own. Checks JSON structures, cleans up text and converts ISO durations for the track display.",
+      "job": "Provides small helper functions with no state of their own. Checks JSON structures, cleans up text and converts **time spans in the standardised format defined by ISO 8601** – here, for example, the playing time of a music track – for the track display.",
       "inputs": "Object?, JSON values, search text or Duration?.",
       "outputs": "Json, List<Json>, String?, normalised search text, as well as Duration? and display text.",
       "partners": "Used by models, API response processing, the collection and the album detail page. No direct network or database access.",
