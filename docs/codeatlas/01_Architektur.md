@@ -23,7 +23,7 @@ The folders grouped by responsibility are therefore not strict technical layers.
 
 ## How the connections work
 
-**Constructor parameters:** When a page is opened, the album, lists, optional country and existing AuthService reference are passed to it. The data is not exchanged again over a network between the Dart files.
+**Constructor parameters:** When a page is opened, the album, lists, **optional country code of the TIDAL account, for example DE for Germany** and existing AuthService reference are passed to it. The data is not exchanged again over a network between the Dart files.
 
 **Future and await:** A Future represents a result that will become available later. await waits within the relevant asynchronous function. Future.wait does not start separate operating system threads; the asynchronous operations that have been started can overlap in time. The cover workers are also asynchronous loops, not explicitly created isolates.
 

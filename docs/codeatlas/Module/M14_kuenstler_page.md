@@ -6,7 +6,7 @@
 
 **Purpose:** A small, stateless wrapper: displays the display name as the page title and passes the associated albums to AlbumGrid.
 
-**Inputs:** KuenstlerOrdner, AuthService, optional country and change/login callbacks.
+**Inputs:** KuenstlerOrdner, AuthService, **optional country code of the TIDAL account, for example DE for Germany** and change/login callbacks.
 
 **Outputs:** Widget tree consisting of AppBar and AlbumGrid.
 

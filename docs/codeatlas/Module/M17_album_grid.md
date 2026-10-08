@@ -6,7 +6,7 @@
 
 **Purpose:** Displays album cards with a cover, title, artists and year. Tapping a card opens an AlbumDetailPage with the same services and callbacks.
 
-**Inputs:** List<Album>, AuthService, optional country and two callbacks.
+**Inputs:** List<Album>, AuthService, **optional country code of the TIDAL account, for example DE for Germany** and two callbacks.
 
 **Outputs:** Album grid and navigation to the detail page.
 

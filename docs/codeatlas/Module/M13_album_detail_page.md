@@ -6,7 +6,7 @@
 
 **Purpose:** Loads the track list from TIDAL and categories from SQLite independently of each other. Allows category assignment and opens album, track or video links externally.
 
-**Inputs:** Album, shared AuthService, optional country and callbacks for login and category changes.
+**Inputs:** Album, shared AuthService, **optional country code of the TIDAL account, for example DE for Germany** and callbacks for login and category changes.
 
 **Outputs:** List<AlbumTitel> in the page state, local category selection and external URLs; feedback after an assignment is saved.
 

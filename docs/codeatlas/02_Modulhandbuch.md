@@ -265,7 +265,7 @@
 
 **Purpose:** Loads the track list from TIDAL and categories from SQLite independently of each other. Allows category assignment and opens album, track or video links externally.
 
-**Inputs:** Album, shared AuthService, optional country and callbacks for login and category changes.
+**Inputs:** Album, shared AuthService, **optional country code of the TIDAL account, for example DE for Germany** and callbacks for login and category changes.
 
 **Outputs:** List<AlbumTitel> in the page state, local category selection and external URLs; feedback after an assignment is saved.
 
@@ -286,7 +286,7 @@
 
 **Purpose:** A small, stateless wrapper: displays the display name as the page title and passes the associated albums to AlbumGrid.
 
-**Inputs:** KuenstlerOrdner, AuthService, optional country and change/login callbacks.
+**Inputs:** KuenstlerOrdner, AuthService, **optional country code of the TIDAL account, for example DE for Germany** and change/login callbacks.
 
 **Outputs:** Widget tree consisting of AppBar and AlbumGrid.
 
@@ -349,7 +349,7 @@
 
 **Purpose:** Displays album cards with a cover, title, artists and year. Tapping a card opens an AlbumDetailPage with the same services and callbacks.
 
-**Inputs:** List<Album>, AuthService, optional country and two callbacks.
+**Inputs:** List<Album>, AuthService, **optional country code of the TIDAL account, for example DE for Germany** and two callbacks.
 
 **Outputs:** Album grid and navigation to the detail page.
 
