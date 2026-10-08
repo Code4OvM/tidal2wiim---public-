@@ -1,0 +1,56 @@
+@startuml
+autonumber
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 17
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #176C78
+skinparam LineColor #176C78
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F1F7F8
+skinparam classBorderColor #176C78
+skinparam componentBackgroundColor #F1F7F8
+skinparam componentBorderColor #176C78
+skinparam packageBackgroundColor #F8FAFB
+skinparam packageBorderColor #819BA3
+skinparam NoteBackgroundColor #FFF4DC
+skinparam NoteBorderColor #BC8B39
+skinparam NoteFontSize 15
+skinparam sequenceMessageAlign center
+skinparam sequenceParticipantBackgroundColor #F1F7F8
+skinparam sequenceParticipantBorderColor #176C78
+skinparam sequenceLifeLineBorderColor #819BA3
+skinparam sequenceArrowThickness 1.2
+hide footbox
+title From JSON resources to Album objects
+participant "Home\n_seiteLesen()" as H
+participant "_apiLesen()\nFunction" as API
+participant "TidalAuthService" as A
+participant "TIDAL OpenAPI" as T
+H -> API : Collection path + sort=-addedAt\noptional page[cursor]
+API -> A : get(client, uri)
+A -> T : Authenticated GET
+T --> A : JSON response
+A --> API : Response
+API --> H : Json {data, links}
+H -> H : Collect album IDs in collection order\nread naechsterCursor
+loop Groups of at most 20 album IDs
+ loop Until metadata cursor is null
+  H -> API : /v2/albums + filter[id]\ninclude=artists,coverArt; optional countryCode
+  API -> A : get(client, uri)
+  A -> T : Authenticated GET
+  T --> A : data + included + links
+  A --> API : Response
+  API --> H : Json
+  H -> H : Build resource index by "type:id"\ncheck metadata cursor
+ end
+end
+H -> H : Album.ausRessourcen(id, ressourcen)\nFor each collection ID
+H --> H : AlbumSeite(List<Album>, naechsterCursor)
+note over H,API
+ JSON decoding takes place in _apiLesen(); domain objects are created afterwards.
+ Missing metadata results in fallback values, not invented data.
+ _apiLesen() waits 300 ms before the HTTP call.
+end note
+@enduml

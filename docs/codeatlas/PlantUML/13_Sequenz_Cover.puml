@@ -1,0 +1,64 @@
+@startuml
+autonumber
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 17
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #176C78
+skinparam LineColor #176C78
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F1F7F8
+skinparam classBorderColor #176C78
+skinparam componentBackgroundColor #F1F7F8
+skinparam componentBorderColor #176C78
+skinparam packageBackgroundColor #F8FAFB
+skinparam packageBorderColor #819BA3
+skinparam NoteBackgroundColor #FFF4DC
+skinparam NoteBorderColor #BC8B39
+skinparam NoteFontSize 15
+skinparam sequenceMessageAlign center
+skinparam sequenceParticipantBackgroundColor #F1F7F8
+skinparam sequenceParticipantBorderColor #176C78
+skinparam sequenceLifeLineBorderColor #819BA3
+skinparam sequenceArrowThickness 1.2
+hide footbox
+title Cover display: file, download and fallback
+participant "AlbumCover\nState" as W
+participant "LokalerCoverCache" as C
+participant "File system" as F
+participant "Cover host" as N
+W -> C : dateiFuer(album)
+C -> C : Check HTTPS URL\nfile name from album ID + URL hash
+C -> F : exists() / length()
+alt Existing non-empty file
+ F --> C : File
+else File missing or empty
+ alt Download for the same path is in progress
+  C -> C : Use the existing Future<File?>
+ else New download
+  C -> N : GET image URL, timeout 20 s
+  N --> C : Status, headers, image bytes
+  alt Usable response
+   C -> F : Write .tmp; then rename to .img
+   F --> C : File
+  else Error / empty data / wrong content type
+   C -> C : null; on exception remove temporary file\nif possible
+  end
+ end
+end
+C --> W : Future<File?> completed
+alt File readable
+ W -> F : Image.file(datei)
+else No file or image decoding failed
+ W -> N : Image.network(url) as fallback
+ opt Network image also fails
+  W -> W : Show album placeholder
+ end
+end
+note over C,F
+ synchronisieren(alben) starts only if at least one cover URL is valid.
+ It then removes old .img/.tmp files and preloads with up to four workers.
+ Individual dateiFuer() calls have no global limit of four.
+end note
+@enduml

@@ -1,0 +1,58 @@
+@startuml
+autonumber
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 17
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #176C78
+skinparam LineColor #176C78
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F1F7F8
+skinparam classBorderColor #176C78
+skinparam componentBackgroundColor #F1F7F8
+skinparam componentBorderColor #176C78
+skinparam packageBackgroundColor #F8FAFB
+skinparam packageBorderColor #819BA3
+skinparam NoteBackgroundColor #FFF4DC
+skinparam NoteBorderColor #BC8B39
+skinparam NoteFontSize 15
+skinparam sequenceMessageAlign center
+skinparam sequenceParticipantBackgroundColor #F1F7F8
+skinparam sequenceParticipantBorderColor #176C78
+skinparam sequenceLifeLineBorderColor #819BA3
+skinparam sequenceArrowThickness 1.2
+hide footbox
+title Loading album details and handing off to TIDAL
+actor User as U
+participant "AlbumDetailPage\nState" as D
+participant "_apiLesen()\n+ AuthService" as A
+participant "LokaleDatenbank" as DB
+participant "Android / external\nTIDAL app" as T
+U -> D : Open album (Album + shared AuthService)
+par Load track list from TIDAL
+ loop Until track-list cursor is null
+  D -> A : /v2/albums/{id}/relationships/items\ninclude=items; optional countryCode + cursor
+  A --> D : data + included + links
+  D -> D : Create AlbumTitel\nappend to _titel / check cursor
+ end
+else Read local categories
+ D -> DB : kategorienLaden()\nkategorieIdsFuerAlbum(album.id)
+ DB --> D : Categories + IDs
+end
+U -> D : Tap album or individual track
+D -> T : launchUrl(..., externalApplication)
+note over D,T
+ Album: https://tidal.com/album/{id}
+ Track: https://tidal.com/browse/track/{id}
+ Video: https://tidal.com/browse/video/{id}
+ No token and no audio stream in the handoff.
+end note
+T --> D : Launch accepted (bool) / error
+U -> T : Start playback with Play\nselect WiiM via TIDAL Connect
+note over U,T
+ The final step is outside our implementation.
+ The platform decides which external handler opens.
+ The app cannot guarantee that playback will start.
+end note
+@enduml

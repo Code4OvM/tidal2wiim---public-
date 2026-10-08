@@ -1,0 +1,110 @@
+@startuml
+' Tidal2WiiM | Actual relational model | SQLite schema version 3
+' Primary source: Tidal2WiiM_Anmeldung_komfort.zip,
+'              lib/data/lokale_datenbank.dart, lines 24-106.
+' Four application tables, one declared foreign key, two explicit indexes.
+' No invented FK from category_albums.album_id to album_cache!
+
+hide circle
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 65
+skinparam class {
+  BackgroundColor #FAFCFD
+  BorderColor #244454
+  HeaderBackgroundColor #E6EFF1
+  FontColor #172C37
+}
+skinparam note {
+  BackgroundColor #FFF7E8
+  BorderColor #AB8750
+  FontColor #423727
+}
+
+title Tidal2WiiM – Relational table model\nActual schema: tidal2wiim.db / Version 3
+
+entity "categories" as CAT {
+  * <u>id</u> : INTEGER <<PK, AUTO>>
+  --
+  * name : TEXT <<UQ>>
+  * created_at : INTEGER
+  * updated_at : INTEGER
+}
+
+entity "category_albums" as CA {
+  * <u>category_id</u> : INTEGER <<PK, FK1>>
+  * <u>album_id</u> : TEXT <<PK>>
+}
+
+entity "album_cache" as AC {
+  * <u>album_id</u> : TEXT <<PK>>
+  --
+  * collection_position : INTEGER
+  * title : TEXT
+  * artists_json : TEXT
+  release_date : TEXT
+  cover_url : TEXT
+  * metadata_missing : INTEGER = 0
+  * cached_at : INTEGER
+}
+
+entity "artist_preferences" as AP {
+  * <u>artist_id</u> : TEXT <<PK>>
+  --
+  custom_name : TEXT
+  * sort_name : TEXT
+  * updated_at : INTEGER
+}
+
+' Identifying relationship: FK1 is part of the composite PK.
+' Each assignment has exactly one category; a category has 0..N assignments.
+CAT ||--o{ CA : "FK1: category_id → id\nON DELETE CASCADE"
+
+' Layout control only; no additional domain or SQL relationships.
+CAT -[hidden]right- AC
+CA -[hidden]right- AP
+AC -[hidden]down- AP
+
+note left of CAT
+  id: INTEGER PRIMARY KEY AUTOINCREMENT.
+  name: NOT NULL COLLATE NOCASE UNIQUE.
+  NOCASE is the collation used in the source code.
+end note
+
+note bottom of CA
+  PK = (category_id, album_id).
+  album_id is NOT an SQL foreign key.
+  Logical matching with album_cache.album_id;
+  a cache row does not have to exist for this.
+  Index: idx_category_albums_album(album_id).
+end note
+
+note top of AC
+  artists_json: JSON list of {id, name}.
+  No separate artist or album/artist table.
+  Index: idx_album_cache_position(collection_position).
+end note
+
+note bottom of AP
+  artist_id identifies a TIDAL artist.
+  No artist table, therefore no SQL FK.
+  Personal sorting remains separate from the album cache.
+end note
+
+legend bottom
+  PK = primary key; underlined = key attribute.
+  FK1 = actually declared foreign key; UQ = UNIQUE; AUTO = AUTOINCREMENT.
+  * = not NULL (for categories.id through INTEGER PRIMARY KEY).
+  Without * = NULL allowed. Data types correspond to the SQLite DDL.
+  || = exactly 1; o{ = 0..N. Solid line = identifying IE relationship.
+  Domain association of album/category: n:m. In the actual schema only the category side is enforced by an FK.
+  Timestamps: milliseconds since the Unix epoch; release_date: ISO 8601 text.
+  metadata_missing: app writes 0/1; no CHECK constraint in the schema.
+  No SQL FK and no edge to artists_json: relationships in JSON are not enforced relationally.
+endlegend
+
+@enduml

@@ -1,0 +1,60 @@
+@startuml
+autonumber
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 17
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #176C78
+skinparam LineColor #176C78
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F1F7F8
+skinparam classBorderColor #176C78
+skinparam componentBackgroundColor #F1F7F8
+skinparam componentBorderColor #176C78
+skinparam packageBackgroundColor #F8FAFB
+skinparam packageBorderColor #819BA3
+skinparam NoteBackgroundColor #FFF4DC
+skinparam NoteBorderColor #BC8B39
+skinparam NoteFontSize 15
+skinparam sequenceMessageAlign center
+skinparam sequenceParticipantBackgroundColor #F1F7F8
+skinparam sequenceParticipantBorderColor #176C78
+skinparam sequenceLifeLineBorderColor #819BA3
+skinparam sequenceArrowThickness 1.2
+hide footbox
+title Editing and saving sort names in bulk
+participant "Home\n_HomePageState" as H
+participant "Editor\nPage / State" as E
+participant "KuenstlerSortierEntwurf" as D
+participant "LokaleDatenbank\n+ Extension" as DB
+H -> DB : kuenstlerEinstellungenLaden()
+DB --> H : Map<String, KuenstlerEinstellung>
+H -> H : Build a KuenstlerSortierZeile list\nfrom _alben + settings
+H -> E : Navigator.push<bool>\nRows + onSpeichern callback
+E -> D : KuenstlerSortierEntwurf(zeilen)
+loop User edits a field
+ E -> D : setzen(id, rohtext)
+ D --> E : Change state / filter result
+ note right of D : Memory only.\nNo SQL write operation.
+end
+alt Save
+ E -> D : aenderungen
+ D --> E : List<KuenstlerSortierAenderung>
+ E -> DB : onSpeichern(aenderungen)\nBound to kuenstlerSortiernamenSpeichern()
+ DB -> DB : Check IDs; transaction\nonly changed IDs; preserve custom_name
+ alt Successful
+  DB --> E : Future<void> completed
+  E --> H : Navigator.pop(true)
+  H -> DB : Reload settings
+  DB --> H : Updated Map
+  H -> H : setState(); derive folders + A-Z index again
+ else Write error
+  DB --> E : Exception / Rollback
+  E -> E : Keep draft; show error\nsaving can be tried again
+ end
+else Cancel / back
+ E -> E : Ask for confirmation if changed\nclose when discarded
+ E --> H : false or no true; no saving
+end
+@enduml

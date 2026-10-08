@@ -1,0 +1,61 @@
+@startuml
+autonumber
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 17
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #176C78
+skinparam LineColor #176C78
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F1F7F8
+skinparam classBorderColor #176C78
+skinparam componentBackgroundColor #F1F7F8
+skinparam componentBorderColor #176C78
+skinparam packageBackgroundColor #F8FAFB
+skinparam packageBorderColor #819BA3
+skinparam NoteBackgroundColor #FFF4DC
+skinparam NoteBorderColor #BC8B39
+skinparam NoteFontSize 15
+skinparam sequenceMessageAlign center
+skinparam sequenceParticipantBackgroundColor #F1F7F8
+skinparam sequenceParticipantBorderColor #176C78
+skinparam sequenceLifeLineBorderColor #819BA3
+skinparam sequenceArrowThickness 1.2
+hide footbox
+title App startup: cache and stored session
+participant "Home\n_HomePageState" as H
+participant "LokaleDatenbank" as DB
+participant "TidalAuthService" as A
+participant "TidalSessionStore" as S
+participant "LokalerCoverCache" as C
+H -> H : initState() / _initialisieren()
+par Locally stored library
+ H -> DB : albumCacheLaden()
+ DB --> H : LokaleBibliothekCache? 
+ opt Cache exists and can still be adopted
+  H -> H : Set _alben + timestamp\nsetState()
+  H ->> C : synchronisieren(cache.alben)\nunawaited
+ end
+else Restore session
+ H -> A : restore()
+ A -> S : read()
+ S --> A : JSON string or null
+ A -> A : Check version, clientId and session
+ A -->> H : notifyListeners()\n_authGeaendert()
+end
+H -> H : Future.wait completed\n_anmeldungWirdGeladen = false
+alt Session exists
+ H -> A : accessToken()
+ A --> H : Token or error
+ opt Token received and _alben not empty
+  H ->> H : _bibliothekImHintergrundAktualisieren()
+ end
+else No session
+ note over H : No automatic sign-in.\nStart page / lab remain usable.
+end
+note over H,A
+ accessToken() may return an existing token without a network call.
+ No cache: the initial load is explicitly triggered in the lab.
+end note
+@enduml

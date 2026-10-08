@@ -1,0 +1,55 @@
+@startuml
+autonumber
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 17
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #176C78
+skinparam LineColor #176C78
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F1F7F8
+skinparam classBorderColor #176C78
+skinparam componentBackgroundColor #F1F7F8
+skinparam componentBorderColor #176C78
+skinparam packageBackgroundColor #F8FAFB
+skinparam packageBorderColor #819BA3
+skinparam NoteBackgroundColor #FFF4DC
+skinparam NoteBorderColor #BC8B39
+skinparam NoteFontSize 15
+skinparam sequenceMessageAlign center
+skinparam sequenceParticipantBackgroundColor #F1F7F8
+skinparam sequenceParticipantBorderColor #176C78
+skinparam sequenceLifeLineBorderColor #819BA3
+skinparam sequenceArrowThickness 1.2
+hide footbox
+title Interactive sign-in and secure storage
+actor User as U
+participant "Home\n_login()" as H
+participant "FlutterAppAuth\n+ TIDAL sign-in" as F
+participant "TidalAuthService" as A
+participant "TidalSessionStore" as S
+U -> H : Sign in in the lab / via the start action
+H -> F : authorizeAndExchangeCode(request)
+note over H,F : clientId, redirectUrl, user.read, collection.read\nNo user credentials in the app code.
+alt Sign-in successful
+ F --> H : Access token, refresh token?, expiry time?
+ H -> A : acceptLogin(TidalSession)
+ A -> A : restore(); _epoch++; set _session
+ A -> S : write(JSON with version, clientId, session)
+ S --> A : Completed or storage error
+ A -->> H : notifyListeners()
+ A --> H : Future<void> completed
+ H -> H : Update status; enable interaction
+ opt Library exists in RAM
+  H ->> H : Start background synchronization
+ end
+else Cancelled / platform error
+ F --> H : Exception
+ H -> H : Keep the existing session\nshow a clear status message
+end
+note over A,S
+ A storage error sets storageWarning.
+ The session may work in RAM without being persistently stored.
+end note
+@enduml

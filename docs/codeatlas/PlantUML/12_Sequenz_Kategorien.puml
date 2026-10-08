@@ -1,0 +1,56 @@
+@startuml
+autonumber
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 17
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #176C78
+skinparam LineColor #176C78
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F1F7F8
+skinparam classBorderColor #176C78
+skinparam componentBackgroundColor #F1F7F8
+skinparam componentBorderColor #176C78
+skinparam packageBackgroundColor #F8FAFB
+skinparam packageBorderColor #819BA3
+skinparam NoteBackgroundColor #FFF4DC
+skinparam NoteBorderColor #BC8B39
+skinparam NoteFontSize 15
+skinparam sequenceMessageAlign center
+skinparam sequenceParticipantBackgroundColor #F1F7F8
+skinparam sequenceParticipantBorderColor #176C78
+skinparam sequenceLifeLineBorderColor #819BA3
+skinparam sequenceArrowThickness 1.2
+hide footbox
+title Assigning an album to several categories
+actor User as U
+participant "AlbumDetailPage\nState" as D
+participant "_AlbumKategorienDialog" as W
+participant "LokaleDatenbank" as DB
+participant "Parent view\nCallback" as P
+U -> D : Assign categories
+D -> DB : kategorienLaden()\nkategorieIdsFuerAlbum(album.id)
+DB --> D : List<Kategorie> + Set<int>
+alt At least one category exists
+ D -> W : Dialog with categories and selection
+ W -> W : Set<int>.from(auswahl)\nLocal working copy
+ U -> W : Change selection and save
+ W --> D : Set<int> of selected category IDs
+ D -> DB : albumKategorienSetzen(album.id, auswahl)
+ DB -> DB : Transaction: delete old pairs\ninsert new category_id/album_id pairs
+ DB --> D : Completed
+ D -> DB : Reload categories + album assignments
+ DB --> D : Updated state
+ D -> P : onKategorienGeaendert()
+ P -> DB : Parent view reloads categories
+ DB --> P : New count / assignment
+else No category exists
+ D --> U : Create a category first
+end
+note over D,DB
+ Cancelling the dialog returns null: no writes.
+ Album data and TIDAL favorites remain unchanged.
+ Category IDs are int; TIDAL album IDs are String.
+end note
+@enduml

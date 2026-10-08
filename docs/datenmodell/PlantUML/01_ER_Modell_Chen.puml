@@ -1,0 +1,73 @@
+@startchen
+' Tidal2WiiM | Domain ER model | 04.10.2026
+' Sources: Tidal2WiiM_Anmeldung_komfort.zip, lib/models/modelle.dart
+'          and lib/data/lokale_datenbank.dart (SQLite schema 3).
+' Chen notation with (min,max) participation limits at each entity.
+' Not an SQL table view: Kuenstler is a domain object, not an SQLite table.
+' Technical cache attributes and management timestamps: see the table model.
+
+left to right direction
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 16
+skinparam shadowing false
+
+title Tidal2WiiM – Domain ER model (Chen)
+
+entity "Album" as ALBUM {
+  "TIDAL album ID" as album_id <<key>>
+  "Title" as title
+  "Release date" as release_date
+  "Cover URL" as cover_url
+  "Year" as jahr <<derived>>
+}
+
+entity "Artist" as KUENSTLER {
+  "TIDAL artist ID" as artist_id <<key>>
+  "TIDAL name" as name
+}
+
+entity "Category" as KATEGORIE {
+  "Category ID" as id <<key>>
+  "Name" as name
+  "Album count" as albumAnzahl <<derived>>
+}
+
+entity "Artist preference" as PRAEFERENZ {
+  "TIDAL artist ID" as artist_id <<key>>
+  "Custom display name" as custom_name
+  "Sort name" as sort_name
+}
+
+relationship "Contributes to" as MITWIRKUNG {
+}
+relationship "Is assigned to" as ZUORDNUNG {
+}
+relationship "Has local preference" as INDIVIDUALISIERUNG {
+}
+
+' Each album has 0..N known artists; each artist has 0..N albums under consideration.
+' Minimum 0 for the album: the app also handles missing artist metadata.
+KUENSTLER -(0,N)- MITWIRKUNG
+ALBUM -(0,N)- MITWIRKUNG
+
+' Each album has 0..N categories; each category has 0..N albums: optional n:m relationship.
+ALBUM -(0,N)- ZUORDNUNG
+KATEGORIE -(0,N)- ZUORDNUNG
+
+' Each artist has 0..1 local preference; each preference belongs to exactly one
+' TIDAL artist. This is a domain association, not a declared SQL FK.
+KUENSTLER -(0,1)- INDIVIDUALISIERUNG
+PRAEFERENZ =(1,1)= INDIVIDUALISIERUNG
+
+legend bottom
+  Rectangle = entity type; diamond = relationship type; ellipse = attribute.
+  Underlined = key; dashed ellipse = derived attribute.
+  (min,max) describes the participation of ONE instance of the adjacent entity.
+  0 = optional; 1 = exactly once; N = any number.
+  Thick line = total participation (here: every artist preference).
+  Artists are stored as JSON in the album cache in the actual schema.
+  Track lists, tokens and cover files are not part of the local table schema.
+endlegend
+
+@endchen
