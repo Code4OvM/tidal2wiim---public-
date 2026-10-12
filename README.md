@@ -130,6 +130,16 @@ The code atlas describes the responsibilities of the 19 Dart modules, their conn
 - [Class and sequence diagrams](docs/codeatlas/04_Diagrammuebersicht.md) — 14 models with rendered views and PlantUML sources.
 - [Code atlas as a PDF](docs/codeatlas/Tidal2WiiM_Codeatlas_2026-10-08.pdf) — a continuous reading edition, version dated 8 October 2026.
 
+## Excel export in version 1.1.0
+
+The full locally stored album library can now be exported to a formatted **.xlsx workbook**. Each album ID has exactly one row, including artist, album, release date, categories and TIDAL link. Optional read-only requests enrich version and quality metadata when TIDAL provides it. Missing metadata is left blank rather than invented.
+
+**Why?** Tidal2WiiM should remain a lean personal library organiser rather than become a second automatic music-classification system. The spreadsheet provides a flexible interface for external analysis and potentially AI-assisted genre proposals. Three initially blank columns — **Suggested genres**, **Assignment confidence** and **Notes** — allow that separate work. The user always decides which categories to create and assign. No spreadsheet import or automatic genre assignment is included.
+
+**Practical validation (12 October 2026):** 510 albums produced exactly 510 rows, including two unresolved TIDAL entries retained with their album IDs and links.
+
+[Excel export documentation](docs/Excel_Export_1.1.0.md)
+
 ## Project Status
 
 Tidal2WiiM grew out of a personal need and is used on my own tablet. The core features for the collection, organisation and opening selections in TIDAL have been implemented. The repository documents this stage of development and provides the basis for further improvements arising from everyday use.
